@@ -1,24 +1,26 @@
-﻿#include <iostream>
+#include <iostream>
 #include <vector>
 #include <sstream>
 #include <fstream>
 #include <string>
+#include <chrono>
+#include <thread>
 using namespace std;
 class Xe {
 private:
 	string bienso, taixe;
 public:
 	Xe(string bienso = "", string taixe = "", string tuyenduong = "")
-		:bienso(bienso), taixe(taixe){
+		:bienso(bienso), taixe(taixe) {
 	}
 	virtual void nhap() {
 		cout << "Nhap bien so xe: "; getline(cin, bienso);
 		cout << "Nhap ten tai xe: "; getline(cin, taixe);
-		
+
 	}
 	virtual void xuat() {
 		cout << "Bien so: " << bienso << ", Tai xe: " << taixe;
-			
+
 	};
 
 	virtual void ghifile(ofstream& of) {
@@ -30,13 +32,13 @@ class Bus :public Xe {
 	string  tuyenduong;
 public:
 	Bus(string bienso = "", string taixe = "", string tuyenduong = "", int soghe = 0)
-		:Xe(bienso, taixe), soghe(soghe),tuyenduong(tuyenduong) {
+		:Xe(bienso, taixe), soghe(soghe), tuyenduong(tuyenduong) {
 	}
 	void nhap() {
 		Xe::nhap();
-		cout << "Nhap tuyen duong ( Tu - Den ): "; getline(cin, tuyenduong);
+		cout << "Nhap tuyen duong ( diemdon - diemden ): "; getline(cin, tuyenduong);
 		cout << "Nhap so ghe: "; cin >> soghe; cin.ignore();
-		
+
 	}
 	void xuat() {
 		Xe::xuat();
@@ -84,21 +86,65 @@ public:
 		of << tenkh << "," << sdt;
 	}
 };
+class Benxe {
+	vector<Xe*> phtien;
+public:
+	~Benxe() {
+		for (Xe* x : phtien)
+			delete x;
+	}
+	void thempt() {
+		int choice;
+		cout << "1.Bus\n2.Taxi\nLua chon: "; cin >> choice; cin.ignore();
+		Xe* v;
+		if (choice == 1)
+			v = new Bus();
+		else if (choice == 2)
+			v = new Taxi();
+		else return;
+		v->nhap();
+		phtien.push_back(v);
+	}
+	void xuattatca() {
+		for (Xe* v : phtien) {
+			v->xuat();
+			cout << "--------------------\n";
+		}
+	}
+	void luufile() {
+		ofstream f("QuanLyXe.txt");
+		for (Xe* v : phtien) {
+			v->ghifile(f);
+			f.close();
+		}
+	}
+
+};
 int main()
 {
-	Taxi a;
-	a.nhap();
-	ofstream f1("QuanLyXe.txt");
-	if (!f1.is_open()) {
-		cout << "Khong the tao/mo file!";
-		return 1;
-	}
-	a.ghifile(f1);
-	f1.close();
-	khachhang b;
-	ofstream f2("QuanLyKH.txt");
-	b.nhap();
-	b.ghifile(f2);
-	f2.close();
+	Benxe quanly;
+	int choice;
+	do {
+		cout << "===== Quan ly ben xe Da Nang =====\n";
+		cout << "1. Them phuong tien\n2. Hien thi tat ca\n3. Luu vao file\n0. Thoat\nChon: ";
+		cin >> choice; cin.ignore();
+		switch (choice)
+		{
+		case 1: quanly.thempt(); break;
+		case 2: quanly.xuattatca(); break;
+		case 3: {
+			quanly.luufile();
+			cout << "Dang tai...";
+			for (int i = 0; i < 10; i++) {
+				cout << ".";
+				cout.flush();
+				this_thread::sleep_for(chrono::milliseconds(100));
+			}
+			cout << "\nDa luu vao file QuanLyXe.txt\n";
+			break;
+		}
+		}
+	} while (choice != 0);
+
 	return 0;
 }
